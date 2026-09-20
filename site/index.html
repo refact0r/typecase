@@ -5,10 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>typecase</title>
+  <meta name="description" content="a collection of typefaces i like and a place to compare them.">
   <!-- fonts.css and fonts.js are generated: edit fonts.toml, then run `uv run build.py` -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="fonts.css">
+  <script>
+    // dark mode only if it was chosen with the toggle before; light otherwise, whatever the system setting.
+    // set here, before the page first paints
+    try { document.documentElement.classList.toggle('dark', localStorage.getItem('theme') === 'dark'); } catch { }
+  </script>
   <style>
     /* the only colours on the page; gray is for borders, scrollbars and the hover highlight */
     :root {
@@ -16,6 +22,14 @@
       --dark: #111;
       --gray: #ddd;
       --bar: 41px; /* height of the custom font field and the controls bar */
+      /* spacing is in steps of 4px: 4 8 12 16 24 48 96. gutters are 12px in the side panel, 24px in the main pane */
+    }
+
+    :root.dark {
+      --light: #111;
+      --dark: #fafafa;
+      --gray: #333;
+      color-scheme: dark;
     }
 
     * {
@@ -65,6 +79,12 @@
       opacity: 1;
     }
 
+    @media (hover: none) {
+      .thumb {
+        opacity: 1;
+      }
+    }
+
     /* left panel: custom font field on top, scrolling font list below */
     aside {
       display: flex;
@@ -96,42 +116,96 @@
       opacity: 1;
     }
 
+    /* categories are split by a line; the heading text is kept for screen readers only */
+    #fonts h2 {
+      height: 0;
+      margin: 8px 0;
+      overflow: hidden;
+      border-top: 1px solid var(--gray);
+    }
+
+    #fonts h2:first-child {
+      margin-top: 4px;
+      border: 0;
+    }
+
+    /* one row per font: the name, plus a button that opens it side by side with the current font */
+    #fonts .row {
+      display: flex;
+      position: relative;
+      background: var(--light);
+    }
+
+    #fonts .row:last-child {
+      margin-bottom: 8px;
+    }
+
     #fonts button {
-      display: block;
-      width: 100%;
       padding: 4px 12px;
       border: 0;
       background: none;
       color: inherit;
       font-size: 16px;
       line-height: 20px; /* fixed, so rows don't shift as each font loads */
+      cursor: pointer;
+    }
+
+    #fonts .font {
+      flex: 1;
+      min-width: 0;
       text-align: left;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      cursor: pointer;
     }
 
-    #fonts h2 {
-      margin: 0;
-      padding: 14px 12px 4px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    /* sits on top of the end of the row, so the names keep the full width */
+    #fonts .compare {
+      position: absolute;
+      inset: 0 0 0 auto;
+      padding: 4px 16px 4px 12px; /* extra on the right keeps the sign clear of the overlay scrollbar */
+      background: inherit;
+      font-family: system-ui, sans-serif;
     }
 
-    #fonts button:hover {
+    /* hovered rows are gray, the selected font is filled, the one open beside it is outlined */
+    #fonts .row:hover {
       background: var(--gray);
     }
 
-    #fonts button[aria-pressed="true"] {
+    #fonts .row.primary {
       background: var(--dark);
       color: var(--light);
     }
 
-    /* installed-only font that this device doesn't have */
-    #fonts button.missing {
+    #fonts .row.secondary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--dark);
+      pointer-events: none;
+    }
+
+    /* the compare button shows on hover (always on touch screens) and on the outlined row, never on the filled one */
+    @media (hover: hover) {
+      #fonts .row:not(:hover, .secondary) .compare {
+        visibility: hidden;
+      }
+    }
+
+    #fonts .row.primary .compare {
+      display: none;
+    }
+
+    /* fonts that aren't open source or free to use get an asterisk, explained in the about text.
+       it's generated content so the button's text stays the plain font name */
+    #fonts .proprietary::after {
+      content: " *";
+      font-family: system-ui, sans-serif;
+    }
+
+    /* ...and they aren't hosted, so this device may not have them */
+    #fonts .missing {
       text-decoration: line-through;
     }
 
@@ -146,23 +220,23 @@
     #controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 20px;
+      gap: 8px 24px;
       align-items: center;
       min-height: var(--bar); /* one row matches the custom font field; grows when it wraps */
-      padding: 6px 24px;
+      padding: 8px 24px;
       border-bottom: 1px solid var(--gray);
     }
 
     #controls label {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     /* sliders drawn by hand: the native ones bring their own greys */
     #controls input {
       margin: 0;
-      width: 130px;
+      width: 128px;
       height: 16px;
       appearance: none;
       background: linear-gradient(var(--dark), var(--dark)) center / 100% 1px no-repeat;
@@ -186,8 +260,20 @@
     }
 
     #controls span {
-      min-width: 4.5em;
+      min-width: 64px;
       font-variant-numeric: tabular-nums;
+    }
+
+    /* dark mode toggle at the far end: a circle that is half of each colour */
+    #theme {
+      margin-left: auto;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      border: 1px solid var(--dark);
+      border-radius: 50%;
+      background: linear-gradient(to right, var(--dark) 50%, var(--light) 50%);
+      cursor: pointer;
     }
 
     #scroll {
@@ -195,51 +281,118 @@
       overflow-y: auto;
     }
 
-    #sample {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 48px 24px;
+    /* one sample, or two side by side. both live in this one grid inside the one scrolling pane, so they
+       scroll together, and their blocks share rows (subgrid) so each paragraph starts level with its twin */
+    #panels {
+      display: grid;
+      grid-template-columns: minmax(0, 900px);
+      justify-content: center;
       font-size: 20px;
+    }
+
+    #panels.split {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sample {
+      display: grid;
+      grid-row: 2 / span 200; /* more rows than blocks; unused rows have no height */
+      grid-template-rows: subgrid;
+      min-width: 0;
+      padding: 48px 24px 96px;
       outline: none;
     }
 
+    /* which font is on which side; stays in view while scrolling */
+    .name {
+      grid-row: 1;
+      position: sticky;
+      top: 0;
+      padding: 8px 24px;
+      border-bottom: 1px solid var(--gray);
+      background: var(--light);
+      font: 14px/16px system-ui, sans-serif;
+    }
+
+    #panels.split .sample {
+      padding-top: 24px;
+    }
+
+    /* the second name and sample are the right-hand side */
+    .name + .name,
+    .sample + .sample {
+      border-left: 1px solid var(--gray);
+    }
+
+    #panels:not(.split) > :is(.name, .sample + .sample) {
+      display: none;
+    }
+
     /* set per element so em scales with each element's own font size */
-    #sample,
-    #sample * {
+    .sample,
+    .sample * {
       letter-spacing: calc(var(--tracking, 0) * 1em);
     }
 
-    /* headings follow the weight slider; <strong> stays relatively bolder */
-    #sample h1,
-    #sample h2 {
+    /* prose: sizes roughly a perfect-fourth type scale (each step x1.333), rounded: small 0.75, body 1,
+       glyphs 1.3, h2 1.8, h1 3.2. line height tightens as size grows (1.5 body, 1.25 h2, 1.1 h1). 1em between blocks,
+       and headings get more space above than below. headings follow the weight slider; <strong> stays relatively
+       bolder. margins don't collapse between grid rows, so the space above an h2 adds to the 1em under the p */
+    .sample {
+      line-height: 1.5;
+    }
+
+    .sample h1,
+    .sample h2 {
       font-weight: inherit;
     }
 
-    #sample h1 {
+    .sample h1 {
       font-size: 3.2em;
-      line-height: 1.05;
+      line-height: 1.1;
       margin: 0 0 0.4em;
     }
 
-    #sample h2 {
-      font-size: 1.6em;
-      line-height: 1.2;
-      margin: 1.6em 0 0.4em;
+    .sample h2 {
+      font-size: 1.8em;
+      line-height: 1.25;
+      margin: 1em 0 0.5em;
     }
 
-    #sample p {
-      line-height: 1.5;
+    .sample p {
       margin: 0 0 1em;
     }
 
-    #sample .glyphs {
-      font-size: 1.4em;
+    .sample small {
+      font-size: 0.75em;
+    }
+
+    /* the one non-standard block: the character set */
+    .sample .glyphs {
+      font-size: 1.3em;
       line-height: 1.4;
       word-break: break-all;
     }
 
-    #sample .small {
-      font-size: 0.7em;
+    /* about text under the sample; always in the page's own font, not editable. the line above it spans the
+       pane, so side by side it meets the divider; the text lines up with the (left) sample */
+    #about {
+      padding: 24px max(24px, (100% - 852px) / 2) 48px;
+      border-top: 1px solid var(--gray);
+    }
+
+    #panels.split ~ #about {
+      padding-inline: 24px;
+    }
+
+    #about p {
+      max-width: 62ch;
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    #about a {
+      color: inherit;
     }
   </style>
 </head>
@@ -247,59 +400,73 @@
 <body>
 
   <aside>
-    <input type="text" id="custom" placeholder="Any installed font…">
+    <input type="text" id="custom" placeholder="any installed font…">
     <nav id="fonts"></nav>
   </aside>
 
   <main>
     <div id="controls">
-      <label>Size
-        <input type="range" id="size" min="10" max="48" value="20">
+      <label>size
+        <input type="range" id="size" autocomplete="off" min="10" max="48" value="20">
         <span id="sizeLabel"></span>
       </label>
-      <label>Weight
-        <input type="range" id="weight" min="100" max="900" step="100" value="400">
+      <label>weight
+        <input type="range" id="weight" autocomplete="off" min="100" max="900" step="100" value="400">
         <span id="weightLabel"></span>
       </label>
-      <label>Letter-spacing
-        <input type="range" id="tracking" min="-0.1" max="0.3" step="0.005" value="0">
+      <label>letter-spacing
+        <input type="range" id="tracking" autocomplete="off" min="-0.1" max="0.3" step="0.005" value="0">
         <span id="trackingLabel"></span>
       </label>
+      <button id="theme" title="dark mode" aria-label="dark mode"></button>
     </div>
 
     <div id="scroll">
-      <!-- contenteditable: click and type to try your own text -->
-      <div id="sample" contenteditable="true" spellcheck="false">
-        <h1>The quick brown fox jumps over the lazy dog</h1>
-        <p>Typography is the craft of endowing human language with a durable visual form. A good typeface disappears
-          while you read it, and yet shapes everything about how the words feel: warm or cold, loud or quiet, old or
-          new.</p>
+      <!-- contenteditable: click and type to try your own text. the script adds the second sample and the names -->
+      <div id="panels">
+        <div class="sample" contenteditable="true" spellcheck="false">
+          <h1>The quick brown fox jumps over the lazy dog</h1>
+          <p>Typography is the craft of endowing human language with a durable visual form. A good typeface disappears
+            while you read it, and yet shapes everything about how the words feel: warm or cold, loud or quiet, old or
+            new.</p>
 
-        <h2>Sphinx of black quartz, judge my vow</h2>
-        <p>Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump
-          quickly. Jackdaws love my big sphinx of quartz. <em>Waltz, bad nymph, for quick jigs vex.</em> <strong>Glib
-            jocks quiz nymph to vex dwarf.</strong></p>
-        <p>On 19 September 2026 at 10:45, flight AZ 1783 departed with 246 passengers; tickets cost $1,389.50 each —
-          roughly 72% more than in 2019.</p>
-        <p class="small">Small print: Illegal1 = O0, rn vs m, cl vs d. Handgloves, Hamburgefonstiv, minimum, illicit,
-          affluent waffle, fjord.</p>
+          <h2>Sphinx of black quartz, judge my vow</h2>
+          <p>Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump
+            quickly. Jackdaws love my big sphinx of quartz. <em>Waltz, bad nymph, for quick jigs vex.</em> <strong>Glib
+              jocks quiz nymph to vex dwarf.</strong></p>
+          <p>On 19 September 2026 at 10:45, flight AZ 1783 departed with 246 passengers; tickets cost $1,389.50 each —
+            roughly 72% more than in 2019.</p>
+          <p><small>Small print: Illegal1 = O0, rn vs m, cl vs d. Handgloves, Hamburgefonstiv, minimum, illicit,
+              affluent waffle, fjord.</small></p>
 
-        <h2>Glyphs</h2>
-        <p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 !?&amp;@#$%€£¥
-          .,:;…‘’“” ()[]{}&lt;&gt; /|\ -–—_ ~^`´¨ *†‡§¶ ©®™° +−×÷=±≠≈≤≥ ←→↑↓</p>
+          <h2>Glyphs</h2>
+          <p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 !?&amp;@#$%€£¥
+            .,:;…‘’“” ()[]{}&lt;&gt; /|\ -–—_ ~^`´¨ *†‡§¶ ©®™° +−×÷=±≠≈≤≥ ←→↑↓</p>
+        </div>
       </div>
+
+      <footer id="about">
+        <p><strong>typecase</strong> is a collection of the typefaces i like from around the internet, and a
+          place to compare them side by side.</p>
+        <p>everything here aims to be open source or free to use, loaded from
+          <a href="https://fonts.google.com">google fonts</a>, <a href="https://www.fontshare.com">fontshare</a>,
+          or hosted here under <a href="fonts/LICENSES.md">open licenses</a>. fonts marked * are proprietary: they
+          aren't hosted, and only show up if you have them installed.</p>
+        <p>made by <a href="https://refact0r.dev">refact0r</a>. source on
+          <a href="https://github.com/refact0r/typecase">github</a>.</p>
+      </footer>
     </div>
   </main>
 
   <script src="fonts.js"></script>
   <script>
-    // FONTS and INSTALLED_ONLY come from fonts.js; each category is alpha-sorted automatically
+    // FONTS, INSTALLED_ONLY and WEIGHTS come from fonts.js; each category is alpha-sorted automatically
     // generic keywords must stay unquoted, or CSS treats them as family names
     const GENERIC = ['system-ui', 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded'];
     const cssFamily = name => GENERIC.includes(name.toLowerCase()) ? name.toLowerCase() : `"${name}"`;
 
     const $ = id => document.getElementById(id);
-    const sample = $('sample'), list = $('fonts'), custom = $('custom');
+    const panels = $('panels'), list = $('fonts'), custom = $('custom');
     const size = $('size'), weight = $('weight'), tracking = $('tracking');
 
     // an installed font changes the text width against at least one of two different fallbacks
@@ -307,7 +474,18 @@
     const width = family => { ctx.font = `72px ${family}`; return ctx.measureText('mmwwli 0O1').width; };
     const isInstalled = name => ['serif', 'monospace'].some(g => width(`"${name}", ${g}`) !== width(g));
 
-    let current = 'Rethink Sans';  // font shown on load
+    const DEFAULT = 'Rethink Sans';
+    let current = DEFAULT;  // selected font
+    let other = null;       // font open beside it, if any
+
+    // second sample for side by side, and a name above each. edits to either sample are copied to the other
+    const samples = [panels.firstElementChild, panels.firstElementChild.cloneNode(true)];
+    const labels = samples.map(() => Object.assign(document.createElement('div'), { className: 'name' }));
+    panels.append(samples[1]);
+    panels.prepend(...labels);
+    panels.addEventListener('input', e => {
+      for (const sample of samples) if (sample !== e.target) sample.innerHTML = e.target.innerHTML;
+    });
 
     for (const [category, names] of Object.entries(FONTS)) {
       const h = document.createElement('h2');
@@ -315,33 +493,91 @@
       list.append(h);
       names.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
       for (const name of names) {
+        const row = document.createElement('div');
+        row.className = 'row';
         const b = document.createElement('button');
+        b.className = 'font';
         b.textContent = name;
         b.style.fontFamily = cssFamily(name);
-        b.addEventListener('click', () => { current = name; custom.value = ''; update(); });
-        if (INSTALLED_ONLY.includes(name) && !isInstalled(name)) {
-          b.className = 'missing';
-          b.style.fontFamily = '';
-          b.title = "Can't be hosted (license), so it only shows on devices that have it installed";
+        // a plain click goes back to one sample; the compare button swaps the second font and keeps the first
+        b.addEventListener('click', () => { current = name; other = null; custom.value = ''; update(); });
+        const compare = document.createElement('button');
+        compare.className = 'compare';
+        compare.addEventListener('click', () => { other = other === name ? null : name; update(); });
+        if (INSTALLED_ONLY.includes(name)) {
+          b.classList.add('proprietary');
+          b.title = "proprietary: not hosted here, so it only shows on devices that have it installed";
+          if (!isInstalled(name)) {
+            b.classList.add('missing');
+            b.style.fontFamily = '';
+          }
         }
-        list.append(b);
+        row.append(b, compare);
+        list.append(row);
       }
     }
 
     function update() {
-      // custom field wins if filled in; fallback font makes a missing font obvious
-      const name = custom.value.trim() || current;
-      sample.style.fontFamily = `${cssFamily(name)}, "Comic Sans MS", cursive`;
-      sample.style.fontSize = size.value + 'px';
-      sample.style.fontWeight = weight.value;
-      sample.style.setProperty('--tracking', tracking.value);
+      // custom field wins over the selected font if filled in; fallback font makes a missing font obvious
+      const typed = custom.value.trim();
+      const names = [typed || current, other];
 
+      // the weight slider only offers what the selected font really has, and snaps to the nearest of those.
+      // custom, generic and installed-only fonts are unknown, so they get the full range
+      const has = WEIGHTS[names[0]] ?? [100, 200, 300, 400, 500, 600, 700, 800, 900];
+      weight.min = has[0];
+      weight.max = has.at(-1);
+      weight.value = has.reduce((a, b) => Math.abs(b - weight.value) < Math.abs(a - weight.value) ? b : a);
+      samples.forEach((sample, i) => {
+        sample.style.fontFamily = `${cssFamily(names[i] ?? current)}, "Comic Sans MS", cursive`;
+        labels[i].textContent = names[i];
+      });
+      panels.classList.toggle('split', other !== null);
+      panels.style.fontSize = size.value + 'px';
+      panels.style.fontWeight = weight.value;
+      panels.style.setProperty('--tracking', tracking.value);
+
+      writeHash();
       $('sizeLabel').textContent = size.value + 'px';
       $('weightLabel').textContent = weight.value;
       $('trackingLabel').textContent = tracking.value + 'em';
-      for (const b of list.querySelectorAll('button'))
-        b.setAttribute('aria-pressed', !custom.value.trim() && b.textContent === current);
+      for (const row of list.querySelectorAll('.row')) {
+        const [b, compare] = row.children;
+        const primary = !typed && b.textContent === current, secondary = b.textContent === other;
+        row.classList.toggle('primary', primary);
+        row.classList.toggle('secondary', secondary);
+        b.setAttribute('aria-pressed', primary);
+        compare.setAttribute('aria-pressed', secondary);
+        compare.textContent = secondary ? '\u2212' : '+';
+        compare.title = secondary ? 'close side by side' : 'open side by side';
+      }
     }
+
+    // the address holds the fonts, e.g. #font=Inter&vs=Satoshi, so a reload or a shared link brings them back.
+    // the sliders are left out on purpose: reloading resets them. a font that isn't in the list is a custom one
+    const known = Object.values(FONTS).flat();
+
+    function readHash() {
+      const q = new URLSearchParams(location.hash.slice(1));
+      const font = q.get('font') ?? DEFAULT;
+      current = known.includes(font) ? font : DEFAULT;
+      custom.value = known.includes(font) ? '' : font;
+      other = known.includes(q.get('vs')) ? q.get('vs') : null;
+    }
+
+    function writeHash() {
+      const q = new URLSearchParams();
+      const font = custom.value.trim() || current;
+      if (font !== DEFAULT) q.set('font', font);
+      if (other) q.set('vs', other);
+      const hash = q.toString();
+      history.replaceState(null, '', hash ? '#' + hash : location.pathname + location.search);
+    }
+
+    $('theme').addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { }
+    });
 
     // double-click a slider to reset it
     for (const slider of [size, weight, tracking]) {
@@ -349,6 +585,24 @@
       slider.addEventListener('dblclick', () => { slider.value = slider.defaultValue; update(); });
     }
     custom.addEventListener('input', update);
+
+    // up/down steps through the list without leaving the sample with your eyes: the side-by-side font
+    // if one is open, otherwise the selected font
+    addEventListener('keydown', e => {
+      if (!['ArrowUp', 'ArrowDown'].includes(e.key) || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.target.closest('input, [contenteditable]')) return; // typing, editing, or moving a slider
+      e.preventDefault();
+      const names = known.filter(name => other === null || name !== current);
+      const from = names.indexOf(other ?? current), step = e.key === 'ArrowDown' ? 1 : -1;
+      const name = names[Math.max(0, Math.min(names.length - 1, from + step))];
+      if (other === null) { current = name; custom.value = ''; } else other = name;
+      update();
+      list.querySelector(other === null ? '.primary' : '.secondary').scrollIntoView({ block: 'nearest' });
+    });
+
+    const showSelected = () => list.querySelector('.primary')?.scrollIntoView({ block: 'center' });
+    addEventListener('hashchange', () => { readHash(); update(); showSelected(); });
+    readHash();
     update();
 
     // overlay scrollbars: a draggable thumb per pane, placed in the pane's parent so it doesn't scroll away
@@ -366,18 +620,18 @@
       pane.addEventListener('scroll', place);
       const resized = new ResizeObserver(place);
       resized.observe(pane);
-      resized.observe(pane.firstElementChild);
+      resized.observe(panels); // the only content whose height changes
       thumb.addEventListener('pointerdown', e => {
         e.preventDefault();
         thumb.setPointerCapture(e.pointerId);
         const startY = e.clientY, startTop = pane.scrollTop;
         const scale = (pane.scrollHeight - pane.clientHeight) / (pane.clientHeight - thumb.offsetHeight);
         thumb.onpointermove = e => { pane.scrollTop = startTop + (e.clientY - startY) * scale; };
-        thumb.onpointerup = () => { thumb.onpointermove = null; };
+        thumb.onlostpointercapture = () => { thumb.onpointermove = null; };
       });
     }
 
-    list.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'center' });
+    showSelected();
   </script>
 </body>
 
