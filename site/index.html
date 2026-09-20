@@ -10,10 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="fonts.css">
   <style>
-    /* the whole page uses exactly these two colours */
+    /* the only colours on the page; gray is for borders, scrollbars and the hover highlight */
     :root {
       --light: #fafafa;
       --dark: #111;
+      --gray: #ddd;
+      --bar: 41px; /* height of the custom font field and the controls bar */
     }
 
     * {
@@ -39,7 +41,7 @@
 
     #fonts:hover,
     #scroll:hover {
-      scrollbar-color: var(--dark) transparent;
+      scrollbar-color: var(--gray) transparent;
     }
 
     /* left panel: custom font field on top, scrolling font list below */
@@ -47,7 +49,7 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      border-right: 1px solid var(--dark);
+      border-right: 1px solid var(--gray);
     }
 
     #fonts {
@@ -58,9 +60,10 @@
     #custom {
       width: 100%;
       padding: 0 12px;
-      height: 41px;
+      height: var(--bar);
+      flex: none;
       border: 0;
-      border-bottom: 1px solid var(--dark);
+      border-bottom: 1px solid var(--gray);
       background: none;
       color: inherit;
       font: inherit;
@@ -98,7 +101,7 @@
     }
 
     #fonts button:hover {
-      box-shadow: inset 3px 0 var(--dark);
+      background: var(--gray);
     }
 
     #fonts button[aria-pressed="true"] {
@@ -124,8 +127,9 @@
       flex-wrap: wrap;
       gap: 8px 20px;
       align-items: center;
-      padding: 10px 24px;
-      border-bottom: 1px solid var(--dark);
+      min-height: var(--bar); /* one row matches the custom font field; grows when it wraps */
+      padding: 6px 24px;
+      border-bottom: 1px solid var(--gray);
     }
 
     #controls label {
