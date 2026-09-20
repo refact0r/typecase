@@ -1,0 +1,51 @@
+# The font list. After editing, run:   uv run build.py
+#
+# Each name is resolved automatically, first match wins:
+#   1. CSS generic keyword (sans-serif, system-ui, …)  -> used as is
+#   2. listed under installed_only below                -> never uploaded, see there
+#   3. Google Fonts                                     -> loaded from fonts.googleapis.com
+#   4. Fontshare                                        -> loaded from api.fontshare.com
+#   5. anything else                                    -> self-hosted: the installed .ttf/.otf files are
+#                                                          converted to fonts/<family>/*.woff2
+# Names must match the real family name exactly (as Font Book / Google / Fontshare show it).
+# Each category is alpha-sorted on the page. A font that is both monospace and serif goes under Monospace.
+
+# Fonts whose license doesn't allow putting the files in a public repo (commercial, "free for personal
+# use", OS fonts). They stay in the list but only render for visitors who have them installed;
+# otherwise the button is greyed out.
+installed_only = [
+  "PP Mondwest",  # Pangram Pangram: free to try, all rights reserved, web use needs a paid license
+  "PP NeueBit",
+  "Helvetica",  # ship with macOS (Times New Roman also with Windows), not redistributable
+  "Helvetica Neue",
+  "Times New Roman",
+]
+
+[categories]
+"Sans-serif" = [
+  "Apfel Grotezk", "Aspekta", "AUTHENTIC Sans", "BDO Grotesk", "Breite Grotesk", "DM Sans", "Geist",
+  "General Sans", "Haskoy", "Helvetica", "Helvetica Neue", "Host Grotesk", "IBM Plex Sans", "Inclusive Sans", "Instrument Sans", "Inter",
+  "Kecal", "Manrope", "Montserrat", "Open Sauce Sans", "Opening Hours Sans", "Outfit", "Plus Jakarta Sans",
+  "Pretendard", "Public Sans", "Red Hat Text", "Rethink Sans", "Satoshi", "Space Grotesk", "Uncut Sans",
+  "Urbanist", "Violet Sans", "Work Sans", "sans-serif", "system-ui",
+]
+"Serif" = [
+  "Times New Roman", "serif",
+]
+"Monospace" = [
+  "Cascadia Code", "DM Mono", "Geist Mono", "Google Sans Code", "IBM Plex Mono", "Inconsolata",
+  "Ioskeley Mono", "JetBrains Mono", "Monaspace Neon Var", "Red Hat Mono", "Reddit Mono", "Space Mono",
+  "Victor Mono", "monospace",
+]
+# obviously-for-display faces (pixel, decorative), regardless of serif/sans/mono
+"Display" = [
+  "Geist Pixel", "PP Mondwest", "PP NeueBit", "Terminal Grotesque", "Terminal Grotesque Open",
+]
+
+# Self-hosting means redistributing the font, so its license has to allow that (OFL, Apache, …).
+# build.py reads the license out of each font file and lists it in fonts/LICENSES.md. If a file
+# carries no license info the build stops until you've checked and noted it here.
+[licenses]
+"AUTHENTIC Sans" = "WTFPL - https://github.com/authenticbusiness/authentic-sans"
+"Breite Grotesk" = "SIL Open Font License 1.1 - https://github.com/metapolator/Breite"
+"Opening Hours Sans" = "SIL Open Font License 1.1 - https://github.com/opening-hours-studio/opening-hours-sans"

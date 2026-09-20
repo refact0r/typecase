@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>typecase</title>
+  <!-- fonts.css and fonts.js are generated: edit fonts.toml, then run `uv run build.py` -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      background: #fafafa;
+      color: #111;
+      font: 14px system-ui, sans-serif;
+    }
+
+    /* left panel: font list */
+    #fonts {
+      overflow-y: auto;
+      background: #fff;
+      border-right: 1px solid #ddd;
+    }
+
+    #custom {
+      width: 100%;
+      padding: 0 12px;
+      height: 41px;
+      border: 0;
+      border-bottom: 1px solid #ddd;
+      font: inherit;
+      outline: none;
+      position: sticky;
+      top: 0;
+    }
+
+    #fonts button {
+      display: block;
+      width: 100%;
+      padding: 4px 12px;
+      border: 0;
+      background: none;
+      color: inherit;
+      font-size: 16px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    #fonts h2 {
+      margin: 0;
+      padding: 14px 12px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+
+    #fonts button:hover {
+      background: #f0f0f0;
+    }
+
+    #fonts button[aria-pressed="true"] {
+      background: #111;
+      color: #fff;
+    }
+
+    /* installed-only font that this device doesn't have */
+    #fonts button.missing {
+      color: #bbb;
+    }
+
+    /* right side: top bar + sample */
+    main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      align-items: center;
+      padding: 10px 24px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #controls input {
+      margin: 0
+    }
+
+    #controls span {
+      min-width: 4.5em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    #sample {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      font-size: 20px;
+      outline: none;
+    }
+
+    /* set per element so em scales with each element's own font size */
+    #sample,
+    #sample * {
+      letter-spacing: calc(var(--tracking, 0) * 1em);
+    }
+
+    /* headings follow the weight slider; <strong> stays relatively bolder */
+    #sample h1,
+    #sample h2 {
+      font-weight: inherit;
+    }
+
+    #sample h1 {
+      font-size: 3.2em;
+      line-height: 1.05;
+      margin: 0 0 0.4em;
+    }
+
+    #sample h2 {
+      font-size: 1.6em;
+      line-height: 1.2;
+      margin: 1.6em 0 0.4em;
+    }
+
+    #sample p {
+      line-height: 1.5;
+      margin: 0 0 1em;
+    }
+
+    #sample .glyphs {
+      font-size: 1.4em;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    #sample .small {
+      font-size: 0.7em;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav id="fonts">
+    <input type="text" id="custom" placeholder="Any installed font…">
+  </nav>
+
+  <main>
+    <div id="controls">
+      <label>Size
+        <input type="range" id="size" min="10" max="48" value="20">
+        <span id="sizeLabel"></span>
+      </label>
+      <label>Weight
+        <input type="range" id="weight" min="100" max="900" step="100" value="400">
+        <span id="weightLabel"></span>
+      </label>
+      <label>Letter-spacing
+        <input type="range" id="tracking" min="-0.1" max="0.3" step="0.005" value="0">
+        <span id="trackingLabel"></span>
+      </label>
+    </div>
+
+    <div id="scroll">
+      <!-- contenteditable: click and type to try your own text -->
+      <div id="sample" contenteditable="true" spellcheck="false">
+        <h1>The quick brown fox jumps over the lazy dog</h1>
+        <p>Typography is the craft of endowing human language with a durable visual form. A good typeface disappears
+          while you read it, and yet shapes everything about how the words feel: warm or cold, loud or quiet, old or
+          new.</p>
+
+        <h2>Sphinx of black quartz, judge my vow</h2>
+        <p>Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump
+          quickly. Jackdaws love my big sphinx of quartz. <em>Waltz, bad nymph, for quick jigs vex.</em> <strong>Glib
+            jocks quiz nymph to vex dwarf.</strong></p>
+        <p>On 19 September 2026 at 10:45, flight AZ 1783 departed with 246 passengers; tickets cost $1,389.50 each —
+          roughly 72% more than in 2019.</p>
+        <p class="small">Small print: Illegal1 = O0, rn vs m, cl vs d. Handgloves, Hamburgefonstiv, minimum, illicit,
+          affluent waffle, fjord.</p>
+
+        <h2>Glyphs</h2>
+        <p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 !?&amp;@#$%€£¥
+          .,:;…‘’“” ()[]{}&lt;&gt; /|\ -–—_ ~^`´¨ *†‡§¶ ©®™° +−×÷=±≠≈≤≥ ←→↑↓</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="fonts.js"></script>
+  <script>
+    // FONTS and INSTALLED_ONLY come from fonts.js; each category is alpha-sorted automatically
+    // generic keywords must stay unquoted, or CSS treats them as family names
+    const GENERIC = ['system-ui', 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded'];
+    const cssFamily = name => GENERIC.includes(name.toLowerCase()) ? name.toLowerCase() : `"${name}"`;
+
+    const $ = id => document.getElementById(id);
+    const sample = $('sample'), list = $('fonts'), custom = $('custom');
+    const size = $('size'), weight = $('weight'), tracking = $('tracking');
+
+    // an installed font changes the text width against at least one of two different fallbacks
+    const ctx = document.createElement('canvas').getContext('2d');
+    const width = family => { ctx.font = `72px ${family}`; return ctx.measureText('mmwwli 0O1').width; };
+    const isInstalled = name => ['serif', 'monospace'].some(g => width(`"${name}", ${g}`) !== width(g));
+
+    let current;
+
+    for (const [category, names] of Object.entries(FONTS)) {
+      const h = document.createElement('h2');
+      h.textContent = category;
+      list.append(h);
+      names.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+      current ??= names[0];
+      for (const name of names) {
+        const b = document.createElement('button');
+        b.textContent = name;
+        b.style.fontFamily = cssFamily(name);
+        b.addEventListener('click', () => { current = name; custom.value = ''; update(); });
+        if (INSTALLED_ONLY.includes(name) && !isInstalled(name)) {
+          b.className = 'missing';
+          b.style.fontFamily = '';
+          b.title = "Can't be hosted (license), so it only shows on devices that have it installed";
+        }
+        list.append(b);
+      }
+    }
+
+    function update() {
+      // custom field wins if filled in; fallback font makes a missing font obvious
+      const name = custom.value.trim() || current;
+      sample.style.fontFamily = `${cssFamily(name)}, "Comic Sans MS", cursive`;
+      sample.style.fontSize = size.value + 'px';
+      sample.style.fontWeight = weight.value;
+      sample.style.setProperty('--tracking', tracking.value);
+
+      $('sizeLabel').textContent = size.value + 'px';
+      $('weightLabel').textContent = weight.value;
+      $('trackingLabel').textContent = tracking.value + 'em';
+      for (const b of list.querySelectorAll('button'))
+        b.setAttribute('aria-pressed', !custom.value.trim() && b.textContent === current);
+    }
+
+    // double-click a slider to reset it
+    for (const slider of [size, weight, tracking]) {
+      slider.addEventListener('input', update);
+      slider.addEventListener('dblclick', () => { slider.value = slider.defaultValue; update(); });
+    }
+    custom.addEventListener('input', update);
+    update();
+  </script>
+</body>
+
+</html>
