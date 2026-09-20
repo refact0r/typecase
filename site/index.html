@@ -10,6 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="fonts.css">
   <style>
+    /* the whole page uses exactly these two colours */
+    :root {
+      --light: #fafafa;
+      --dark: #111;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -19,12 +25,12 @@
       height: 100vh;
       display: grid;
       grid-template-columns: 200px 1fr;
-      background: #fafafa;
-      color: #111;
+      background: var(--light);
+      color: var(--dark);
       font: 14px system-ui, sans-serif;
     }
 
-    /* thin, pale scrollbars that only darken while the pointer is over the pane */
+    /* thin scrollbars that only show while the pointer is over the pane */
     #fonts,
     #scroll {
       scrollbar-width: thin;
@@ -33,14 +39,20 @@
 
     #fonts:hover,
     #scroll:hover {
-      scrollbar-color: #ccc transparent;
+      scrollbar-color: var(--dark) transparent;
     }
 
-    /* left panel: font list */
+    /* left panel: custom font field on top, scrolling font list below */
+    aside {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-right: 1px solid var(--dark);
+    }
+
     #fonts {
+      flex: 1;
       overflow-y: auto;
-      background: #fff;
-      border-right: 1px solid #ddd;
     }
 
     #custom {
@@ -48,11 +60,16 @@
       padding: 0 12px;
       height: 41px;
       border: 0;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid var(--dark);
+      background: none;
+      color: inherit;
       font: inherit;
       outline: none;
-      position: sticky;
-      top: 0;
+    }
+
+    #custom::placeholder {
+      color: inherit;
+      opacity: 1;
     }
 
     #fonts button {
@@ -78,21 +95,20 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: #888;
     }
 
     #fonts button:hover {
-      background: #f0f0f0;
+      box-shadow: inset 3px 0 var(--dark);
     }
 
     #fonts button[aria-pressed="true"] {
-      background: #111;
-      color: #fff;
+      background: var(--dark);
+      color: var(--light);
     }
 
     /* installed-only font that this device doesn't have */
     #fonts button.missing {
-      color: #bbb;
+      text-decoration: line-through;
     }
 
     /* right side: top bar + sample */
@@ -109,8 +125,7 @@
       gap: 8px 20px;
       align-items: center;
       padding: 10px 24px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid var(--dark);
     }
 
     #controls label {
@@ -119,8 +134,30 @@
       gap: 6px;
     }
 
+    /* sliders drawn by hand: the native ones bring their own greys */
     #controls input {
-      margin: 0
+      margin: 0;
+      width: 130px;
+      height: 16px;
+      appearance: none;
+      background: linear-gradient(var(--dark), var(--dark)) center / 100% 1px no-repeat;
+      cursor: pointer;
+    }
+
+    #controls input::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--dark);
+    }
+
+    #controls input::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--dark);
     }
 
     #controls span {
@@ -184,9 +221,10 @@
 
 <body>
 
-  <nav id="fonts">
+  <aside>
     <input type="text" id="custom" placeholder="Any installed font…">
-  </nav>
+    <nav id="fonts"></nav>
+  </aside>
 
   <main>
     <div id="controls">
