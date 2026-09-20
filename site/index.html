@@ -32,16 +32,37 @@
       font: 14px system-ui, sans-serif;
     }
 
-    /* thin scrollbars that only show while the pointer is over the pane */
+    /* native scrollbars are hidden; the script adds a .thumb that floats over each pane instead,
+       so it takes no width, and only shows while the pointer is over the pane */
     #fonts,
     #scroll {
-      scrollbar-width: thin;
-      scrollbar-color: transparent transparent;
+      scrollbar-width: none;
     }
 
-    #fonts:hover,
-    #scroll:hover {
-      scrollbar-color: var(--gray) transparent;
+    #fonts::-webkit-scrollbar,
+    #scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    aside,
+    main {
+      position: relative;
+    }
+
+    .thumb {
+      position: absolute;
+      right: 2px;
+      width: 6px;
+      border-radius: 3px;
+      background: var(--gray);
+      opacity: 0;
+      transition: opacity 0.15s;
+      touch-action: none;
+    }
+
+    aside:hover .thumb,
+    main:hover .thumb {
+      opacity: 1;
     }
 
     /* left panel: custom font field on top, scrolling font list below */
@@ -329,6 +350,33 @@
     }
     custom.addEventListener('input', update);
     update();
+
+    // overlay scrollbars: a draggable thumb per pane, placed in the pane's parent so it doesn't scroll away
+    for (const pane of [list, $('scroll')]) {
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      pane.parentElement.append(thumb);
+      const place = () => {
+        const range = pane.scrollHeight - pane.clientHeight;
+        thumb.hidden = range <= 0;
+        const height = Math.max(pane.clientHeight ** 2 / pane.scrollHeight, 24);
+        thumb.style.height = height + 'px';
+        thumb.style.top = pane.offsetTop + (pane.scrollTop / range) * (pane.clientHeight - height) + 'px';
+      };
+      pane.addEventListener('scroll', place);
+      const resized = new ResizeObserver(place);
+      resized.observe(pane);
+      resized.observe(pane.firstElementChild);
+      thumb.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        thumb.setPointerCapture(e.pointerId);
+        const startY = e.clientY, startTop = pane.scrollTop;
+        const scale = (pane.scrollHeight - pane.clientHeight) / (pane.clientHeight - thumb.offsetHeight);
+        thumb.onpointermove = e => { pane.scrollTop = startTop + (e.clientY - startY) * scale; };
+        thumb.onpointerup = () => { thumb.onpointermove = null; };
+      });
+    }
+
     list.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'center' });
   </script>
 </body>
