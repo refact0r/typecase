@@ -24,7 +24,7 @@ const FONTS = {
     "Opening Hours Sans",
     "Outfit",
     "Plus Jakarta Sans",
-    "Pretendard",
+    "Pretendard Std",
     "Public Sans",
     "Red Hat Text",
     "Rethink Sans",

@@ -1,9 +1,9 @@
-// Cloudflare Workers static hosting: `npx wrangler deploy` publishes this folder to typecase.refact0r.dev
+// Cloudflare Workers static hosting: `npx wrangler deploy` publishes site/ to typecase.refact0r.dev
 {
   "name": "typecase",
   "compatibility_date": "2026-09-01",
   "assets": {
-    "directory": "."  // .assetsignore keeps the non-site files out
+    "directory": "./site"
   },
   "routes": [
     { "pattern": "typecase.refact0r.dev", "custom_domain": true }

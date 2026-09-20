@@ -4,7 +4,7 @@
     {
       "name": "typecase",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765"],
+      "runtimeArgs": ["-m", "http.server", "8765", "-d", "site"],
       "port": 8765
     }
   ]

@@ -24,6 +24,18 @@
       font: 14px system-ui, sans-serif;
     }
 
+    /* thin, pale scrollbars that only darken while the pointer is over the pane */
+    #fonts,
+    #scroll {
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+    }
+
+    #fonts:hover,
+    #scroll:hover {
+      scrollbar-color: #ccc transparent;
+    }
+
     /* left panel: font list */
     #fonts {
       overflow-y: auto;
@@ -51,6 +63,7 @@
       background: none;
       color: inherit;
       font-size: 16px;
+      line-height: 20px; /* fixed, so rows don't shift as each font loads */
       text-align: left;
       white-space: nowrap;
       overflow: hidden;
@@ -231,14 +244,13 @@
     const width = family => { ctx.font = `72px ${family}`; return ctx.measureText('mmwwli 0O1').width; };
     const isInstalled = name => ['serif', 'monospace'].some(g => width(`"${name}", ${g}`) !== width(g));
 
-    let current;
+    let current = 'Rethink Sans';  // font shown on load
 
     for (const [category, names] of Object.entries(FONTS)) {
       const h = document.createElement('h2');
       h.textContent = category;
       list.append(h);
       names.sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
-      current ??= names[0];
       for (const name of names) {
         const b = document.createElement('button');
         b.textContent = name;
@@ -275,6 +287,7 @@
     }
     custom.addEventListener('input', update);
     update();
+    list.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'center' });
   </script>
 </body>
 

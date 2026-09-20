@@ -1,5 +1,5 @@
 # typecase
 
-a simple tool for comparing/collecting typefaces i like.
+a simple tool for comparing and collecting typefaces.
 
 <https://typecase.refact0r.dev>

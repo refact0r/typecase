@@ -727,72 +727,72 @@
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-thin.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-thin.woff2") format("woff2");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-extralight.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-extralight.woff2") format("woff2");
   font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-light.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-regular.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-medium.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-semibold.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-semibold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-bold.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-extrabold.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-extrabold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Pretendard";
-  src: url("fonts/pretendard/pretendard-black.woff2") format("woff2");
+  font-family: "Pretendard Std";
+  src: url("fonts/pretendard-std/pretendardstd-black.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
