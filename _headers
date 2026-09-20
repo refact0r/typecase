@@ -1,0 +1,3 @@
+# font files never change under the same name in practice; let browsers keep them for a month
+/fonts/*
+  Cache-Control: public, max-age=2592000
