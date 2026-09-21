@@ -21,7 +21,8 @@
       --light: #fafafa;
       --dark: #111;
       --gray: #ddd;
-      --bar: 41px; /* height of the custom font field and the controls bar */
+      --bar: 41px;
+      /* height of the custom font field and the controls bar */
       /* spacing is in steps of 4px: 4 8 12 16 24 48 96. gutters are 12px in the side panel, 24px in the main pane */
     }
 
@@ -43,7 +44,7 @@
       grid-template-columns: 200px 1fr;
       background: var(--light);
       color: var(--dark);
-      font: 14px system-ui, sans-serif;
+      font: 14px Rethink Sans, system-ui, sans-serif;
     }
 
     /* native scrollbars are hidden; the script adds a .thumb that floats over each pane instead,
@@ -146,7 +147,8 @@
       background: none;
       color: inherit;
       font-size: 16px;
-      line-height: 20px; /* fixed, so rows don't shift as each font loads */
+      line-height: 20px;
+      /* fixed, so rows don't shift as each font loads */
       cursor: pointer;
     }
 
@@ -163,14 +165,35 @@
     #fonts .compare {
       position: absolute;
       inset: 0 0 0 auto;
-      padding: 4px 16px 4px 12px; /* extra on the right keeps the sign clear of the overlay scrollbar */
+      width: 32px;
+      /* wide enough that the sign stays clear of the overlay scrollbar */
+      padding: 0;
       background: inherit;
-      font-family: system-ui, sans-serif;
+      font-family: Rethink Sans, system-ui, sans-serif;
+      /* a hosted font, so the nudge below holds on every platform */
     }
 
-    /* hovered rows are gray, the selected font is filled, the one open beside it is outlined */
-    #fonts .row:hover {
+    /* the sign is generated content so it can be nudged on its own. measured at 16px/20px: the baseline lands
+       19.5px down the 28px row and the ink of + and − is centred 0.29em above it, 0.86px below the row's middle */
+    #fonts .compare::before {
+      content: "+";
+      display: block;
+      translate: 0 -0.054em;
+    }
+
+    #fonts .compare[aria-pressed="true"]::before {
+      content: "\2212";
+    }
+
+    /* hovered rows are gray, the selected font is filled, the one open beside it is outlined.
+       the gray follows what a click would hit: over the compare button it's only the button */
+    #fonts .row:hover,
+    #fonts .compare:hover {
       background: var(--gray);
+    }
+
+    #fonts .row:has(.compare:hover) {
+      background: var(--light);
     }
 
     #fonts .row.primary {
@@ -222,7 +245,8 @@
       flex-wrap: wrap;
       gap: 8px 24px;
       align-items: center;
-      min-height: var(--bar); /* one row matches the custom font field; grows when it wraps */
+      min-height: var(--bar);
+      /* one row matches the custom font field; grows when it wraps */
       padding: 8px 24px;
       border-bottom: 1px solid var(--gray);
     }
@@ -296,21 +320,27 @@
 
     .sample {
       display: grid;
-      grid-row: 2 / span 200; /* more rows than blocks; unused rows have no height */
+      grid-row: 1 / span 200;
+      /* more rows than blocks; unused rows have no height */
       grid-template-rows: subgrid;
       min-width: 0;
       padding: 48px 24px 96px;
       outline: none;
     }
 
-    /* which font is on which side; stays in view while scrolling */
-    .name {
-      grid-row: 1;
-      position: sticky;
-      top: 0;
-      padding: 8px 24px;
+    /* which font is on which side. a bar above the scrolling pane, not inside it, so it never moves */
+    #names {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       border-bottom: 1px solid var(--gray);
-      background: var(--light);
+    }
+
+    #names[hidden] {
+      display: none;
+    }
+
+    .name {
+      padding: 8px 24px;
       font: 14px/16px system-ui, sans-serif;
     }
 
@@ -319,12 +349,12 @@
     }
 
     /* the second name and sample are the right-hand side */
-    .name + .name,
-    .sample + .sample {
+    .name+.name,
+    .sample+.sample {
       border-left: 1px solid var(--gray);
     }
 
-    #panels:not(.split) > :is(.name, .sample + .sample) {
+    #panels:not(.split)>.sample+.sample {
       display: none;
     }
 
@@ -381,7 +411,7 @@
       border-top: 1px solid var(--gray);
     }
 
-    #panels.split ~ #about {
+    #panels.split~#about {
       padding-inline: 24px;
     }
 
@@ -421,8 +451,13 @@
       <button id="theme" title="dark mode" aria-label="dark mode"></button>
     </div>
 
+    <div id="names" hidden>
+      <div class="name"></div>
+      <div class="name"></div>
+    </div>
+
     <div id="scroll">
-      <!-- contenteditable: click and type to try your own text. the script adds the second sample and the names -->
+      <!-- contenteditable: click and type to try your own text. the script adds the second sample -->
       <div id="panels">
         <div class="sample" contenteditable="true" spellcheck="false">
           <h1>The quick brown fox jumps over the lazy dog</h1>
@@ -451,9 +486,11 @@
         <p>everything here aims to be open source or free to use, loaded from
           <a href="https://fonts.google.com">google fonts</a>, <a href="https://www.fontshare.com">fontshare</a>,
           or hosted here under <a href="fonts/LICENSES.md">open licenses</a>. fonts marked * are proprietary: they
-          aren't hosted, and only show up if you have them installed.</p>
+          aren't hosted, and only show up if you have them installed.
+        </p>
         <p>made by <a href="https://refact0r.dev">refact0r</a>. source on
-          <a href="https://github.com/refact0r/typecase">github</a>.</p>
+          <a href="https://github.com/refact0r/typecase">github</a>.
+        </p>
       </footer>
     </div>
   </main>
@@ -478,11 +515,10 @@
     let current = DEFAULT;  // selected font
     let other = null;       // font open beside it, if any
 
-    // second sample for side by side, and a name above each. edits to either sample are copied to the other
+    // second sample for side by side. edits to either sample are copied to the other
     const samples = [panels.firstElementChild, panels.firstElementChild.cloneNode(true)];
-    const labels = samples.map(() => Object.assign(document.createElement('div'), { className: 'name' }));
+    const labels = [...names.children];
     panels.append(samples[1]);
-    panels.prepend(...labels);
     panels.addEventListener('input', e => {
       for (const sample of samples) if (sample !== e.target) sample.innerHTML = e.target.innerHTML;
     });
@@ -533,6 +569,7 @@
         labels[i].textContent = names[i];
       });
       panels.classList.toggle('split', other !== null);
+      labels[0].parentElement.hidden = other === null;
       panels.style.fontSize = size.value + 'px';
       panels.style.fontWeight = weight.value;
       panels.style.setProperty('--tracking', tracking.value);
@@ -548,7 +585,6 @@
         row.classList.toggle('secondary', secondary);
         b.setAttribute('aria-pressed', primary);
         compare.setAttribute('aria-pressed', secondary);
-        compare.textContent = secondary ? '\u2212' : '+';
         compare.title = secondary ? 'close side by side' : 'open side by side';
       }
     }
