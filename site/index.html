@@ -227,7 +227,9 @@
       font-family: system-ui, sans-serif;
     }
 
-    /* ...and they aren't hosted, so this device may not have them */
+    /* ...and they aren't hosted, so this device may not have them. the custom field is struck through
+       the same way when the font file at the url it holds couldn't be loaded */
+    #custom.missing,
     #fonts .missing {
       text-decoration: line-through;
     }
@@ -430,7 +432,8 @@
 <body>
 
   <aside>
-    <input type="text" id="custom" placeholder="any installed font…">
+    <input type="text" id="custom" placeholder="installed font or url…"
+      title="type the name of a font on this device, or paste the url of a font file (.woff2, .woff, .ttf, .otf) from any site">
     <nav id="fonts"></nav>
   </aside>
 
@@ -488,6 +491,9 @@
           or hosted here under <a href="fonts/LICENSES.md">open licenses</a>. fonts marked * are proprietary: they
           aren't hosted, and only show up if you have them installed.
         </p>
+        <p>seen a font you like somewhere else? paste the url of its font file (find it in the network tab of your
+          browser's dev tools) into the field at the top left to try it out here. it's only loaded in your browser,
+          for as long as the page is open.</p>
         <p>made by <a href="https://refact0r.dev">refact0r</a>. source on
           <a href="https://github.com/refact0r/typecase">github</a>.
         </p>
@@ -553,9 +559,46 @@
       }
     }
 
+    // a url in the custom field is a font file on some other site. it's loaded straight from there if that site
+    // allows it, otherwise through /steal (worker.js). the url itself is its family name, so no two clash; the
+    // label shows the file name. it only lasts until the page closes
+    const isURL = text => /^https?:\/\//i.test(text) && URL.canParse(text);
+    const tried = new Set(), failed = new Set();
+    let stealing;
+
+    function fileName(url) {
+      const { pathname, hostname } = new URL(url);
+      try {
+        return decodeURIComponent(pathname.split('/').pop()).replace(/\.(woff2?|[ot]tf)$/i, '') || hostname;
+      } catch { return hostname; }
+    }
+
+    async function steal(url) {
+      tried.add(url);
+      try {
+        let res = await fetch(url).catch(() => null);
+        if (!res?.ok) res = await fetch('steal?url=' + encodeURIComponent(url));
+        if (!res.ok) throw new Error(res.status);
+        // one file is usually one weight; claiming every weight shows it as it is on the weight slider
+        // instead of letting the browser fake a bold version. a variable font gets its real range
+        const face = new FontFace(url, await res.arrayBuffer(), { weight: '1 1000' });
+        document.fonts.add(await face.load()); // the samples redraw in it by themselves
+      } catch {
+        failed.add(url);
+        update();
+      }
+    }
+
     function update() {
       // custom field wins over the selected font if filled in; fallback font makes a missing font obvious
       const typed = custom.value.trim();
+      const url = isURL(typed) ? typed : null;
+      if (url && !tried.has(url)) {
+        // wait for a pause, so typing a url out doesn't fetch every prefix of it
+        clearTimeout(stealing);
+        stealing = setTimeout(() => steal(url), 300);
+      }
+      custom.classList.toggle('missing', failed.has(url));
       const names = [typed || current, other];
 
       // the weight slider only offers what the selected font really has, and snaps to the nearest of those.
@@ -566,7 +609,7 @@
       weight.value = has.reduce((a, b) => Math.abs(b - weight.value) < Math.abs(a - weight.value) ? b : a);
       samples.forEach((sample, i) => {
         sample.style.fontFamily = `${cssFamily(names[i] ?? current)}, "Comic Sans MS", cursive`;
-        labels[i].textContent = names[i];
+        labels[i].textContent = i === 0 && url ? fileName(url) : names[i];
       });
       panels.classList.toggle('split', other !== null);
       labels[0].parentElement.hidden = other === null;

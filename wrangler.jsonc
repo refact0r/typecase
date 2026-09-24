@@ -1,7 +1,9 @@
-// Cloudflare Workers static hosting: `npx wrangler deploy` publishes site/ to typecase.refact0r.dev
+// Cloudflare Workers static hosting: `npx wrangler deploy` publishes site/ to typecase.refact0r.dev.
+// requests that aren't a file in site/ go to worker.js, which fetches fonts from other sites (/steal)
 {
   "name": "typecase",
   "compatibility_date": "2026-09-01",
+  "main": "worker.js",
   "assets": {
     "directory": "./site"
   },
