@@ -23,14 +23,14 @@ installed_only = [
 
 [categories]
 "Sans-serif" = [
-  "Apfel Grotezk", "Aspekta", "AUTHENTIC Sans", "BDO Grotesk", "Breite Grotesk", "DM Sans", "Geist",
+  "Apfel Grotezk", "Aspekta", "AUTHENTIC Sans", "BDO Grotesk", "Be Vietnam Pro", "Breite Grotesk", "Clash Grotesk", "DM Sans", "Epilogue", "Geist",
   "General Sans", "Haskoy", "Helvetica", "Helvetica Neue", "Host Grotesk", "IBM Plex Sans", "Inclusive Sans", "Instrument Sans", "Inter",
-  "Kecal", "Manrope", "Montserrat", "Open Sauce Sans", "Opening Hours Sans", "Outfit", "Plus Jakarta Sans",
-  "Pretendard Std", "Public Sans", "Red Hat Text", "Rethink Sans", "Satoshi", "Space Grotesk", "Uncut Sans",
+  "Kecal", "Manrope", "Montserrat", "Open Sauce Sans", "Opening Hours Sans", "Outfit", "Plus Jakarta Sans", "Poppins",
+  "Pretendard Std", "Public Sans", "Red Hat Text", "Rethink Sans", "Satoshi", "Space Grotesk", "Switzer", "Uncut Sans",
   "Urbanist", "Violet Sans", "Work Sans", "sans-serif", "system-ui",
 ]
 "Serif" = [
-  "Bitter", "Cormorant", "Cormorant Garamond", "EB Garamond", "Fraunces", "IBM Plex Serif", "Libre Baskerville", "Lora", "Newsreader",
+  "Bitter", "Cormorant", "Cormorant Garamond", "Crimson Pro", "EB Garamond", "Fraunces", "IBM Plex Serif", "Libre Baskerville", "Lora", "Newsreader", "Sentient",
   "Source Serif 4", "Times New Roman", "serif",
 ]
 "Monospace" = [
