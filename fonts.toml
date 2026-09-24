@@ -30,7 +30,8 @@ installed_only = [
   "Urbanist", "Violet Sans", "Work Sans", "sans-serif", "system-ui",
 ]
 "Serif" = [
-  "Times New Roman", "serif",
+  "Bitter", "Cormorant", "Cormorant Garamond", "EB Garamond", "Fraunces", "IBM Plex Serif", "Libre Baskerville", "Lora", "Newsreader",
+  "Source Serif 4", "Times New Roman", "serif",
 ]
 "Monospace" = [
   "Cascadia Code", "DM Mono", "Geist Mono", "Google Sans Code", "IBM Plex Mono", "Inconsolata",
