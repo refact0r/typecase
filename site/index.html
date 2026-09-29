@@ -583,7 +583,9 @@
         // one file is usually one weight; claiming every weight shows it as it is on the weight slider
         // instead of letting the browser fake a bold version. a variable font gets its real range
         const face = new FontFace(url, await res.arrayBuffer(), { weight: '1 1000' });
-        document.fonts.add(await face.load()); // the samples redraw in it by themselves
+        document.fonts.add(await face.load()); // the samples redraw in it by themselves; the icon doesn't
+        iconKey = null;
+        drawIcon();
       } catch {
         failed.add(url);
         update();
@@ -631,6 +633,40 @@
         compare.setAttribute('aria-pressed', secondary);
         compare.title = secondary ? 'close side by side' : 'open side by side';
       }
+      drawIcon();
+    }
+
+    // the favicon is an "a" in the selected font and weight, in the page's colours. drawn on a canvas, since an
+    // svg icon can't see the page's fonts. the glyph's ink is scaled to fill the square, whatever the font's metrics
+    const icon = document.querySelector('link[rel=icon]');
+    const iconCanvas = document.createElement('canvas');
+    iconCanvas.width = iconCanvas.height = 64;
+    let iconKey;
+
+    async function drawIcon() {
+      const style = getComputedStyle(document.documentElement);
+      const [bg, fg] = ['--light', '--dark'].map(v => style.getPropertyValue(v).trim());
+      const font = `${weight.value} 64px ${samples[0].style.fontFamily}`;
+      const key = [font, bg, fg].join();
+      if (key === iconKey) return;
+      iconKey = key;
+      await document.fonts.load(font, 'a').catch(() => { });
+      if (key !== iconKey) return; // something newer was asked for while this font loaded
+      const c = iconCanvas.getContext('2d');
+      c.fillStyle = bg;
+      c.fillRect(0, 0, 64, 64);
+      c.font = font;
+      const m = c.measureText('a');
+      const scale = 48 / Math.max(m.actualBoundingBoxLeft + m.actualBoundingBoxRight,
+        m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+      c.save();
+      c.translate(32, 32);
+      c.scale(scale, scale);
+      c.fillStyle = fg;
+      c.fillText('a', (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2,
+        (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+      c.restore();
+      icon.href = iconCanvas.toDataURL();
     }
 
     // the address holds the fonts, e.g. #font=Inter&vs=Satoshi, so a reload or a shared link brings them back.
@@ -657,6 +693,7 @@
     $('theme').addEventListener('click', () => {
       const dark = document.documentElement.classList.toggle('dark');
       try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { }
+      drawIcon();
     });
 
     // double-click a slider to reset it
