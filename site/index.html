@@ -246,7 +246,7 @@
     #controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 24px;
+      gap: 8px 16px;
       align-items: center;
       min-height: var(--bar);
       /* one row matches the custom font field; grows when it wraps */
@@ -291,9 +291,26 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* dark mode toggle at the far end: a circle that is half of each colour */
-    #theme {
+    /* italic toggle: outlined, filled while it's on, like the rows of the font list. pushed to the far end
+       of the bar, with the dark mode toggle after it */
+    #italic {
       margin-left: auto;
+      padding: 3px 8px;
+      border: 1px solid var(--dark);
+      background: none;
+      color: inherit;
+      font: inherit;
+      line-height: 16px;
+      cursor: pointer;
+    }
+
+    #italic[aria-pressed="true"] {
+      background: var(--dark);
+      color: var(--light);
+    }
+
+    /* dark mode toggle: a circle that is half of each colour */
+    #theme {
       width: 16px;
       height: 16px;
       padding: 0;
@@ -370,9 +387,12 @@
     /* prose: sizes roughly a perfect-fourth type scale (each step x1.333), rounded: small 0.75, body 1,
        glyphs 1.3, h2 1.8, h1 3.2. line height tightens as size grows (1.5 body, 1.25 h2, 1.1 h1). 1em between blocks,
        and headings get more space above than below. headings follow the weight slider; <strong> stays relatively
-       bolder. margins don't collapse between grid rows, so the space above an h2 adds to the 1em under the p */
+       bolder. margins don't collapse between grid rows, so the space above an h2 adds to the 1em under the p.
+       --leading is the line-height slider as a ratio of its default, so every block loosens or tightens together.
+       a font with no italic stays upright rather than being slanted by the browser */
     .sample {
-      line-height: 1.5;
+      line-height: calc(1.5 * var(--leading, 1));
+      font-synthesis-style: none;
     }
 
     .sample h1,
@@ -382,13 +402,13 @@
 
     .sample h1 {
       font-size: 3.2em;
-      line-height: 1.1;
+      line-height: calc(1.1 * var(--leading, 1));
       margin: 0 0 0.4em;
     }
 
     .sample h2 {
       font-size: 1.8em;
-      line-height: 1.25;
+      line-height: calc(1.25 * var(--leading, 1));
       margin: 1em 0 0.5em;
     }
 
@@ -403,7 +423,7 @@
     /* the one non-standard block: the character set */
     .sample .glyphs {
       font-size: 1.3em;
-      line-height: 1.4;
+      line-height: calc(1.4 * var(--leading, 1));
       word-break: break-all;
     }
 
@@ -452,6 +472,11 @@
         <input type="range" id="tracking" autocomplete="off" min="-0.1" max="0.3" step="0.005" value="0">
         <span id="trackingLabel"></span>
       </label>
+      <label>line-height
+        <input type="range" id="leading" autocomplete="off" min="1" max="2" step="0.05" value="1.5">
+        <span id="leadingLabel"></span>
+      </label>
+      <button id="italic" aria-pressed="false">italic</button>
       <button id="theme" title="dark mode" aria-label="dark mode"></button>
     </div>
 
@@ -504,14 +529,15 @@
 
   <script src="fonts.js"></script>
   <script>
-    // FONTS, INSTALLED_ONLY and WEIGHTS come from fonts.js; each category is alpha-sorted automatically
+    // FONTS, INSTALLED_ONLY, WEIGHTS and STYLESHEETS come from fonts.js; each category is alpha-sorted automatically
     // generic keywords must stay unquoted, or CSS treats them as family names
     const GENERIC = ['system-ui', 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded'];
     const cssFamily = name => GENERIC.includes(name.toLowerCase()) ? name.toLowerCase() : `"${name}"`;
 
     const $ = id => document.getElementById(id);
     const panels = $('panels'), list = $('fonts'), custom = $('custom');
-    const size = $('size'), weight = $('weight'), tracking = $('tracking');
+    const size = $('size'), weight = $('weight'), tracking = $('tracking'), leading = $('leading');
+    const italic = $('italic');
 
     // an installed font changes the text width against at least one of two different fallbacks
     const ctx = document.createElement('canvas').getContext('2d');
@@ -530,6 +556,33 @@
       for (const sample of samples) if (sample !== e.target) sample.innerHTML = e.target.innerHTML;
     });
 
+    // a font on Google Fonts or Fontshare has its own stylesheet, added to the page the first time the font is
+    // needed. resolves once the stylesheet is in (or failed), which is when the font can be asked for by name.
+    // self-hosted fonts are declared in fonts.css, and their files are only fetched when used anyway
+    const sheets = new Map();
+    function load(name) {
+      if (!Object.hasOwn(STYLESHEETS, name)) return Promise.resolve();
+      if (!sheets.has(name)) sheets.set(name, new Promise(done => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = STYLESHEETS[name];
+        link.onload = link.onerror = done;
+        document.head.append(link);
+      }));
+      return sheets.get(name);
+    }
+
+    // each name in the list is set in its own font, but only once it has scrolled into (or near) view,
+    // so opening the page doesn't download every font in the list
+    const seen = new IntersectionObserver(entries => {
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) continue;
+        seen.unobserve(target);
+        load(target.textContent);
+        target.style.fontFamily = cssFamily(target.textContent);
+      }
+    }, { root: list, rootMargin: '200px 0px' });
+
     for (const [category, names] of Object.entries(FONTS)) {
       const h = document.createElement('h2');
       h.textContent = category;
@@ -541,7 +594,6 @@
         const b = document.createElement('button');
         b.className = 'font';
         b.textContent = name;
-        b.style.fontFamily = cssFamily(name);
         // a plain click goes back to one sample; the compare button swaps the second font and keeps the first
         b.addEventListener('click', () => { current = name; other = null; custom.value = ''; update(); });
         const compare = document.createElement('button');
@@ -550,11 +602,9 @@
         if (INSTALLED_ONLY.includes(name)) {
           b.classList.add('proprietary');
           b.title = "proprietary: not hosted here, so it only shows on devices that have it installed";
-          if (!isInstalled(name)) {
-            b.classList.add('missing');
-            b.style.fontFamily = '';
-          }
+          if (!isInstalled(name)) b.classList.add('missing');
         }
+        if (!b.classList.contains('missing')) seen.observe(b);
         row.append(b, compare);
         list.append(row);
       }
@@ -603,6 +653,7 @@
       }
       custom.classList.toggle('missing', failed.has(url));
       const names = [typed || current, other];
+      names.forEach(load);
 
       // the weight slider only offers what the selected font really has, and snaps to the nearest of those.
       // custom, generic and installed-only fonts are unknown, so they get the full range
@@ -619,11 +670,14 @@
       panels.style.fontSize = size.value + 'px';
       panels.style.fontWeight = weight.value;
       panels.style.setProperty('--tracking', tracking.value);
+      panels.style.setProperty('--leading', leading.value / leading.defaultValue);
+      panels.style.fontStyle = italic.ariaPressed === 'true' ? 'italic' : '';
 
       writeHash();
       $('sizeLabel').textContent = size.value + 'px';
       $('weightLabel').textContent = weight.value;
       $('trackingLabel').textContent = tracking.value + 'em';
+      $('leadingLabel').textContent = leading.value;
       for (const row of list.querySelectorAll('.row')) {
         const [b, compare] = row.children;
         const primary = !typed && b.textContent === current, secondary = b.textContent === other;
@@ -650,6 +704,7 @@
       const key = [font, bg, fg].join();
       if (key === iconKey) return;
       iconKey = key;
+      await load(custom.value.trim() || current);
       await document.fonts.load(font, 'a').catch(() => { });
       if (key !== iconKey) return; // something newer was asked for while this font loaded
       const c = iconCanvas.getContext('2d');
@@ -697,10 +752,11 @@
     });
 
     // double-click a slider to reset it
-    for (const slider of [size, weight, tracking]) {
+    for (const slider of [size, weight, tracking, leading]) {
       slider.addEventListener('input', update);
       slider.addEventListener('dblclick', () => { slider.value = slider.defaultValue; update(); });
     }
+    italic.addEventListener('click', () => { italic.ariaPressed = italic.ariaPressed !== 'true'; update(); });
     custom.addEventListener('input', update);
 
     // up/down steps through the list without leaving the sample with your eyes: the side-by-side font
